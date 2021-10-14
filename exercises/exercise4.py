@@ -393,6 +393,7 @@ class SuzukiKasami(WorkerDevice):
         self._requested = False
         (queue, ln) = self._token
         ln[self.index()] = self._rn[self.index()]
+        print("LN SÆTTES FRA: ", ln[self.index()], "TIL: ", self._rn[self.index()])
         # let's generate a new queue with all devices with outstanding requests
         for id in self.medium().ids():
             if ln[id] + 1 == self._rn[id]:
