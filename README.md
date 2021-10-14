@@ -106,7 +106,7 @@ For all exercises today, you can use the `sync` network type - but most algorith
 
 3. Characterize the algorithms performance and correctness:
    1. Is the algorithm correct? (ME1, ME2, ME3)
-   2. How does it perform ? (bandwidth, enter/exit delay,throughput)
+   2. How does it perform ? (bandwidth, enter/exit delay)
    3. How does it cope with failures? / How can it be made fault tolerant?
 
 4. Bonus exercise, modifying the `TokenRing` class of `exercises/exercise4.py`:
@@ -118,3 +118,49 @@ For all exercises today, you can use the `sync` network type - but most algorith
    1. Extend the mutex algorithm implementations s.t. the `do_work()` call starts an asynchronous process (e.g. a future) which later calls a `release()` method on the mutex classes.
    2. Check that the algorithms still work, and modify where needed.
    3. Submit a pull-request!
+
+# Exercise 5
+1. Identify two problems with IP-multicast
+   1. What is a practical problem for IP-multicast? 
+   2. What is a theoretical problem for IP-multicast?
+   
+2. Identify all the events in the following picture
+   1. Compute the lamport clocks for each event
+   2. Compute the vector clock for each event
+   3. What is the difference in the orderings produced by vector and lamport clocks?
+
+![A message sequence chart of three processes, without vector-clock annotations](figures/vector_clock_exercise.png)
+
+
+3. Design (and implement) Totally Ordered FIFO multicast (both requirements must be met).
+   You can use the `TOSEQMulticast` from `exercise5.py` as a starting-point.
+
+   1. Is it reliable? 
+      1. if not, can it become so? 
+      2. if it is, argue why!
+
+4. Discuss FIFO ordering in two overlapping multicast groups
+   1. FIFO is no longer guaranteed, how is it broken, and how do you fix it?
+
+5. Bonus exercise: Fix the ISIS algorithm!
+   1. Hint: how (and when) do you identify a tie?
+
+# Exercise 6
+1. Study the pseudo-code in the slides (on moodle) and complete the implement of the `King` Algorithm in `exercise6.py`
+   1. How does the algorithm deal with a Byzantine king (try f=1, the first king is byzantine)?
+   2. Why does the algorithm satisfy Byzantine integrity?
+   3. Sketch/discuss a modification your implementation s.t. the algorithm works in an `async` network, but looses its termination guarantee
+      1. What would happen with a Byzantine king?
+      2. What would happen with a slow king?
+      3. What about the combination of the above?
+   
+2. Bonus Exercise: Implement the Paxos algorithm in `exercise6.py`, see the pseudo-code on moodle (use the video for reference when in doubt) for the two interesting roles (proposer and acceptor).
+   1. Identify messages send/received by each role
+      1. Investigate `PAXOSNetwork`
+   2. Implement each role but the learner
+      1. Assume that each device is both a `Proposer` and an `Acceptor` (the `Learner` is provided)
+      2. A class combining/forwarding messages is provided (`PAXOS`).
+      3. Your job is to implement the missing functionality in `Proposer` and `Acceptor`, search for "TODO"
+   3. Demonstrate that your code works in an `async` environment
+      1. Try with a large number of devices (for instance 20 or 30)
+   4. Discuss how you can use Paxos in "continued consensus" where you have to agree on the order of entries in a log-file
