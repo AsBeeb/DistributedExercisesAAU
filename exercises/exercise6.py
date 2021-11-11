@@ -9,19 +9,25 @@ from emulators.Device import Device
 from emulators.Medium import Medium
 from emulators.MessageStub import MessageStub
 
+from random import randrange
+
+from collections import Counter
+
+def most_common_element(lst):
+    data = Counter(lst)
+    return max(lst, key=data.get)
 
 class ConsensusRequester:
     def consensus_reached(self, element):
         raise NotImplementedError
 
     def initial_value(self):
-        raise NotImplementedError
-
+        return random.randint(1, 3)
 
 class SimpleRequester(ConsensusRequester):
 
     def __init__(self):
-        self._proposal = random.randint(0, 100)
+        self._proposal = random.randint(1, 4)
 
     @property
     def initial_value(self) -> int:
@@ -37,7 +43,6 @@ class SimpleRequester(ConsensusRequester):
         if SimpleRequester._consensus != element:
             raise ValueError(
                 f"Disagreement in consensus, expected {element} but other process already got {SimpleRequester._consensus}")
-
 
 class Propose(MessageStub):
     def __init__(self, value, sender: int = 0, destination: int = 0):
@@ -152,12 +157,37 @@ class King(Device):
         else:
             self._application = SimpleRequester()
 
+        self._v = self._application.initial_value
+        self._f = number_of_devices - 1
+        self._v_array = []
+        self._common = 0
+
     def run(self):
-        pass
+        # Phases
+        for i in range(0, self._f):  # f + 1 rounds
+
+            self.b_multicast(Propose({self._application.initial_value}))    
+            # v_p = self._v.copy()
+
+            for p in self.medium().receive_all():
+                self._v_array.append(p.value().pop())
+                print("Array: ", self._v_array)
+
+            self._common = most_common_element(self._v_array)
+            print(self._common)
+            if i != self._f - 1:
+                self.b_multicast(Propose(self.index))
+                print(self._common)
+
 
     def print_result(self):
         pass
 
+    def b_multicast(self, message: MessageStub):
+        message.source = self.index()
+        for i in self.medium().ids():
+            message.destination = i
+            self.medium().send(message)
 
 class PrepareMessage(MessageStub):
     def __init__(self, sender: int, destination: int, uid: int):

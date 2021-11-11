@@ -268,6 +268,57 @@ class TOSEQMulticast(MulticastListener, MulticastService, Device):
         self._application.forward(message)
 
 
+class TOFIFOMulticast(MulticastListener, MulticastService, Device):
+
+    def __init__(self, index: int, number_of_devices: int, medium: Medium, application: MulticastListener = None):
+        super().__init__(index, number_of_devices, medium)
+        if application is not None:
+            self._application = application
+        else:
+            self._application = Multicaster(index, self)
+        self._b_multicast = BasicMulticast(index, number_of_devices, medium, self)
+        self._l_seq = 0
+        self._g_seq = 0
+        self._order = {}
+        self._received = {}
+
+    def send(self, content):
+        self._b_multicast.send((self.index(), self._l_seq, content))
+        self._l_seq += 1
+
+    def deliver(self, message):
+        if not isinstance(message, Order):
+            (sid, sseq, content) = message
+            mid = (sid, sseq)
+            if self.index() == 0:
+                # index 0 is global sequencer
+                self._order[mid] = self._g_seq
+                self._b_multicast.send(Order(mid, self._g_seq))
+                self._application.deliver(message)
+                self._g_seq += 1
+            else:
+                self._received[mid] = content
+                self.try_deliver()
+        elif self.index() != 0:
+            # index 0 is global sequencer
+            self._order[message.message_id()] = message.order()
+            self.try_deliver()
+
+    def try_deliver(self):
+        for mid, order in self._order.items():
+            if order == self._g_seq and mid in self._received:
+                self._g_seq += 1
+                self._application.deliver(self._received[mid])
+                self.try_deliver()
+                return
+
+    def run(self):
+        self._b_multicast.run()
+
+    def forward(self, message):
+        self._application.forward(message)
+
+
 class Vote(MessageStub):
     def __init__(self, sender: int, destination: int, order: (int, int), message_id: (int, int)):
         super().__init__(sender, destination)
