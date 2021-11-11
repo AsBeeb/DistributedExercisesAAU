@@ -164,3 +164,40 @@ For all exercises today, you can use the `sync` network type - but most algorith
    3. Demonstrate that your code works in an `async` environment
       1. Try with a large number of devices (for instance 20 or 30)
    4. Discuss how you can use Paxos in "continued consensus" where you have to agree on the order of entries in a log-file
+
+# Exercise 7
+1. DS5ed 18.5, 18.13
+2. Sketch an architecture for the following three systems: A bulletin board (simple reddit), a bank, a version control system (e.g. GIT)
+   1. Identify the system types
+   2. Which replication type is suitable, and for which parts of the system
+   3. If you go for a gossip solution, what is a suitable update frequency?
+3. BONUS Exercise: Implement the Bully algorithm (DS 5ed, page 660) in `exercise7.py`
+   1. In which replication scheme is it useful?
+   2. What is the "extra cost" of a new leader in replication?
+
+# Exercise 8
+1. Compare GFS and Chubby, and identify use cases that are better for one or the other solution.
+2. Consider the code in `exercise8.py`, which sketches GFS, and complete the "append record" implementation.
+   1. Take a look at how the GFS master is implemented, and how it translates file + chunk index to chunk handle
+   2. Sketch a design for the "passive replication" solution of the GFS. Consider how many types of messages you need, when they should be sent, etc
+   3. Implement your solution, starting from the handler of RecordAppendReqMessage of the GfsChunkserver class
+   4. Try out your solution with a larger number of clients, to have more concurrent changes to the "file"
+3. BONUS Exercise: Consider how to add shadow masters to the system. Clients and chunk servers will still interact with the first master to change the file system, but the shadow master can always work as read-only.
+
+NOTICE: To execute the code, issue for example:
+```bash
+python3.9 exercise_runner.py --lecture 8 --algorithm GfsNetwork --type async --devices 7
+```
+
+# Exercise 9
+1. Consider the code in `exercise9.py`, which sketches MapReduce, and complete it.
+   1. The Master is pretty much complete, the same can be said for the client. Take a look at how the Master is supposed to interact with Mappers and Reducers
+   2. Consider how to implement the Reducers. Take into account that we are simulating "local storage in the mappers" using memory
+   3. Look for the TODOs, and implement your solution
+   4. Try to change the number of mappers and reducers, and look at the "performance". In particular, look at how many rounds are needed to complete the job with the "sync" simulator.
+2. Compare MapReduce and Spark RDDs, and consider what it would change in terms of architecture, especially to supprt RDDs
+
+NOTICE: To execute the code, issue for example:
+```bash
+python3 exercise_runner.py --lecture 9 --algorithm MapReduceNetwork --type async --devices 6
+```
