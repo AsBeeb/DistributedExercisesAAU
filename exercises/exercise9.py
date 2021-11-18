@@ -35,9 +35,11 @@ class MapReduceMaster(Device):
             self.number_partitions = ingoing.number_partitions
             number_of_mappers = self.number_of_devices() - self.number_partitions - 2
             for i in range(2, self.number_partitions + 2):
+                print("REDUCERS: ", i)
                 message = ReduceTaskMessage(self.index(), i, i - 2, self.number_partitions, number_of_mappers) # the reducer needs to know how many mappers they are, to know when its task is completed
                 self.medium().send(message)
             for i in range(0, number_of_mappers):
+                print("MAPPERS: ", i)
                 length = len(ingoing.filenames)
                 length = 5 # TODO: comment out this line to process all files, once you think your code is ready
                 first = int(length * i / number_of_mappers)
@@ -78,7 +80,6 @@ class MapReduceWorker(Device):
         # variables if it is a reducer
         self.R_my_partition = 0 # the partition I am managing
         self.R_number_mappers = 0 # how many mappers there are. I need to know it to decide when I can tell the master I am done with the reduce task
-
 
     def mapper_process_file(self, filename):
         # goal: return the occurrences of words in the file
@@ -132,7 +133,6 @@ class MapReduceWorker(Device):
         if self.role == Role.REDUCER:
             # not much to do: everything is done when the master tells us about a mapper that completed its task
             pass
-
 
 
     def run(self):
