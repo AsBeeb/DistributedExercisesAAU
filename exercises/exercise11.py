@@ -60,7 +60,7 @@ class ChordNode(Device):
 
     def is_request_for_me(self, guid):
         # TODO: implement this function that checks if the routing process is over
-        pass
+        return self.routing_data.chord_id == guid
 
     def next_hop(self, guid):
         # TODO: implement this function with the routing logic
